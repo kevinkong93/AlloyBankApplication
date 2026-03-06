@@ -1,0 +1,59 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alloy Application Form</title>
+    <style>
+        /* Simple styling for readability, copied from https://www.w3schools.com/html/html5_syntax.asp*/
+        body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input { width: 100%; padding: 8px; margin-top: 4px; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Bank Application Form</h1>
+    <!-- Form submits POST request to /submit route in Flask -->
+    <form action="/submit" method="post">
+        <label for="first_name">First Name</label>
+        <input type="text" name="first_name" required>
+
+        <label for="last_name">Last Name</label>
+        <input type="text" name="last_name" required>
+
+        <label for="email">Email Address</label>
+        <input type="email" name="email" required>
+
+        <label for="phone">Phone Number</label>
+        <input type="text" name="phone" required>
+
+        <label for="address1">Address Line 1</label>
+        <input type="text" name="address1" required>
+
+        <label for="address2">Address Line 2</label>
+        <input type="text" name="address2">
+
+        <label for="city">City</label>
+        <input type="text" name="city">
+
+        <label for="state">State (2-letter code, Capital Letters Only)</label>
+        <input type="text" name="state" pattern="[A-Z]{2}" maxlength="2">
+
+        <label for="zip">Zip/Postal Code</label>
+        <input type="text" name="zip">
+
+         <label for="country">Country </label>
+        <input type="text" name="country" pattern="[US]{2}" maxlength="2">       
+
+        <label for="ssn">SSN (9 digits, no dashes)</label>
+        <input type="password" name="ssn" pattern="\d{9}" required>
+
+        <label for="dob">Date of Birth</label>
+        <input type="date" name="dob">
+<!-- The ISO 8601 standard date format is YYYY-MM-DD (e.g., 2026-03-06). In HTML, the type="date" input element automatically-->
+        <button type="submit">Submit Application</button>
+    </form>
+</body>
+</html>
