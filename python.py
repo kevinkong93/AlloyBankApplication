@@ -6,6 +6,7 @@ import base64
 
 # For later when I integrate with Alloy API, I’ll need to import requests and HTTPBasicAuth to send authenticated requests to the API. For now, I’m just printing the captured data to the console.
 import requests 
+from requests import auth
 from requests.auth import HTTPBasicAuth
 
 #env variable
@@ -23,29 +24,21 @@ load_dotenv()  # This reads the .env file
 # POST https://sandbox.alloy.co/v1/evaluations/ https://developer.alloy.com/public/reference/post_evaluations
 
 # Load Alloy credentials from environment variables
+#env file contains ALLOY_TOKEN=your_workflow_token and ALLOY_SECRET=your_workflow_secret.
 token = os.environ.get("ALLOY_TOKEN")
 secret = os.environ.get("ALLOY_SECRET")
 if not token or not secret:
     raise ValueError("ALLOY_TOKEN and ALLOY_SECRET should be set in environment variables.")
 
-# Create Basic Auth header 
-credentials = f"{token}:{secret}"
-encoded_credentials = base64.b64encode(credentials.encode()).decode()
-HEADERS = {
-    "accept": "qpplication/json",
-    "content-type": "application/json",
-    "authorization": f"Basic {encoded_credentials}"
-}
-
 #inialize Flask app
 app = Flask(__name__)
 
-# Route to display the form. The browser sends a GET request when navigating to the page.
+# Route to display the HTML form. The browser sends a GET request when navigating to the page.
 @app.route("/")
 def form():
     return render_template("form.html")
 
-# Route to handle form submission. The browser sends a POST request when the user clicks Submit. Without the route i’ll get a 404 error.
+# Route to handle form submission. The browser sends a POST request when the user clicks Submit. Without the route i’ll get a 404 error. 
 @app.route("/submit", methods=["POST"])
 def submit_application():#captures the form data. request.form contains all submitted form data. I can access each field using request.form["field_name"].
     data = {
@@ -53,9 +46,9 @@ def submit_application():#captures the form data. request.form contains all subm
         "phone_number": request.form["phone"],#req
         "address_line_1": request.form["address1"],#req
         "address_country_code": request.form["country"] ,#req, 
-        "name_first": request.form["first_name"], 
-        "name_last": request.form["last_name"],
-        "address_line_2": request.form.get("address2", ""),
+        "name_first": request.form["first_name"], #Rest of the data fields are optional for API call but included for Assessment.
+        "name_last": request.form["last_name"], #req
+        "address_line_2": request.form.get("address2", ""), #optional field, so I use request.form.get() with a default value of an empty string if the field is not provided.
         "address_city": request.form.get("city", ""),
         "address_state": request.form.get("state", ""),
         "address_postal_code": request.form.get("zip", ""),
@@ -65,18 +58,20 @@ def submit_application():#captures the form data. request.form contains all subm
 # Send POST request to Alloy
     response = requests.post(
         "https://sandbox.alloy.co/v1/evaluations",
-        headers=HEADERS,
+        auth=(token, secret),
         json=data
     )
 # Generate outcome. Display message based on outcome
     try:
+        # safely access the nested "outcome" field in the JSON response. If any part of the path is missing, it defaults to "Unknown". This prevents errors if the API response doesn't contain the expected structure.
         outcome = response.json().get("summary", {}).get("outcome", "Unknown")
+        
     except Exception:
         return f"Error: {response.text}", 500
 #Jessica Rabbit
     if outcome == "Approved":
         return "<h2>Success! Your account has been approved.</h2>"
-#Jessica Review
+#Jessica Review Else If,
     elif outcome == "Manual Review":
         return "<h2>Thanks for submitting your application, we’ll be in touch shortly.</h2>"
 #Jessica Deny
@@ -86,7 +81,6 @@ def submit_application():#captures the form data. request.form contains all subm
         return f"<h2>Unexpected Outcome: {outcome}</h2>"
 
 # Start the Flask server. The server listens for incoming requests and routes them to the appropriate functions based on the defined routes. I can access the form also at http://localhost:9000/ in my web browser.
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9000))
     app.run(host="0.0.0.0", port=port, debug=True)
