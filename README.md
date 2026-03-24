@@ -7,7 +7,7 @@ This project is a web app that allows users to submit a simulated  bank/finance 
 **Sandbox mode**: all requests are simulated; 
 
 ### Flask Setup
-- Flask project initialized (app.py)
+- Flask project initialized (python.py)
 - Form rendered using HTML templates
 - Routes for form display and submission created
 ### Environment Variables / Secrets
